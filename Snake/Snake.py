@@ -6,7 +6,11 @@ pygame.init()
 screen = pygame.display.set_mode((800, 600))
 
 backgroundImage = pygame.image.load("background1.jpg")
+gameoverImage = pygame.image.load("GAMEOVER.jpg")
 appleImage = pygame.image.load('apple.png')
+
+GO_surface = pygame.Surface((800, 600))
+GO_surface.set_colorkey((255, 255, 255))
 
 class Snake:
 
@@ -44,7 +48,6 @@ class Apple():
     def __init__(self):
         self.x = random.randint(25, 745)
         self.y = random.randint(25, 545)
-        self.rad = 15
     def draw(self):
         screen.blit(appleImage, (self.x, self.y))
 
@@ -69,10 +72,9 @@ def scores(x, y):
     text = shrift.render('SCORE: ' + str(score), True, (255, 0, 0))
     screen.blit(text, (x, y))
 
-'''def GameOver(x, y):
-   shrift = pygame.font.SysFont('times new roman', 50)
-   text = shrift.render("GAMEOVER" , True, (255, 0, 0))
-   screen.blit(text, (x, y))''' 
+def GameOver(x, y):
+   
+   screen.blit(gameoverImage, (x, y))
 
 snake = Snake()
 apple = Apple()
@@ -122,7 +124,9 @@ while running:
         isGameOver = True
     
     if isGameOver == True:
-        running = False
+        pygame.display.update()
+        GameOver(0,0)
+        
 
     if not isGameOver:
         screen.blit(backgroundImage, (0, 0))
