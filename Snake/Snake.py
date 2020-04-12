@@ -1,19 +1,20 @@
 import pygame
 import random
-#
+
 pygame.init()
 
 screen = pygame.display.set_mode((800, 600))
 
-backgroundImage = pygame.image.load('background1.jpg')
-gameoverImage = pygame.image.load('GAMEOVER.jpg')
+backgroundImage = pygame.image.load("background1.jpg")
 appleImage = pygame.image.load('apple.png')
 
 class Snake:
 
     def __init__(self):
         self.size = 1
-        self.elements = [[100, 100]]
+        self.x = random.randint(50, 750)
+        self.y = random.randint(25, 545)
+        self.elements = [[self.x, self.y]]
         self.radius = 15
         self.dx = 5  # right
         self.dy = 0
@@ -47,9 +48,6 @@ class Apple():
     def draw(self):
         screen.blit(appleImage, (self.x, self.y))
 
-snake = Snake()
-apple = Apple()
-score = 0
 
 def collision():
     if((apple.x >= snake.elements[0][0] - 40 and apple.x <= snake.elements[0][0] + 40) and (apple.y >= snake.elements[0][1] - 40 and apple.y <= snake.elements[0][1] + 40)):
@@ -71,13 +69,18 @@ def scores(x, y):
     text = shrift.render('SCORE: ' + str(score), True, (255, 0, 0))
     screen.blit(text, (x, y))
 
-def GameOver(x, y):
-    screen.blit(gameoverImage, (x, y))
+'''def GameOver(x, y):
+   shrift = pygame.font.SysFont('times new roman', 50)
+   text = shrift.render("GAMEOVER" , True, (255, 0, 0))
+   screen.blit(text, (x, y))''' 
+
+snake = Snake()
+apple = Apple()
+score = 0
 
 running = True
 
 d = 8
-
 FPS = 30
 
 clock = pygame.time.Clock()
@@ -105,7 +108,6 @@ while running:
                 snake.dx = 0
                 snake.dy = d
 
-    pressed = pygame.key.get_pressed()
     coll = collision()
     dead = death()
     d_w = death_wall()
@@ -114,10 +116,13 @@ while running:
         apple.x = random.randint(25, 745)
         apple.y = random.randint(25, 545)
         score += 1
-    
-    if (dead == True) or (d_w == True):
+    if dead:
         isGameOver = True
-        screen.blit(gameoverImage, (0, 0))
+    if d_w:
+        isGameOver = True
+    
+    if isGameOver == True:
+        running = False
 
     if not isGameOver:
         screen.blit(backgroundImage, (0, 0))
