@@ -127,7 +127,6 @@ while running:
     if not isGameOver:
         screen.blit(backgroundImage, (0, 0))
         snake.move()
-        screen.fill((0, 0, 0))
         apple.draw()
         snake.draw()
         scores(670, 0)
