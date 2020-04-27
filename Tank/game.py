@@ -10,6 +10,7 @@ backgroundImage = pygame.transform.scale(pygame.image.load('pic/background.jpg')
 life_img1 = pygame.image.load('pic/life_red.png')
 life_img2 = pygame.image.load('pic/life_blue.png')
 
+gameoverImage = pygame.transform.scale(pygame.image.load('pic/GameOver.jpg'), (900, 700))
 
 class Direction:
     UP = 1
@@ -96,6 +97,9 @@ class Bullet:
 
         self.draw()
 
+def GameOver(x, y):
+    screen.blit(gameoverImage, (x, y))
+
 r = random.randint(0, 255)
 g = random.randint(0, 255)
 b = random.randint(0, 255)
@@ -106,15 +110,14 @@ clock = pygame.time.Clock()
 
 tank1 = Tank(200, 300, 5, (255, 0, 0), life_img2, (805, 20))
 tank2 = Tank(500, 300, 5, (0, 0, 255), life_img1, (20, 20), pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s)
-tanks = [tank1, tank2]
 bullets = []
 
 sound1 = pygame.mixer.Sound('sound/shoot.mp3')
 sound2 = pygame.mixer.Sound('sound/hit.wav')
 
 run = True 
-isGameOver1 = False
-isGameover2 = False
+isGameOver = False
+
 while run:
     mill = clock.tick(FPS)
     
@@ -166,22 +169,22 @@ while run:
             bullets.pop(0)
             tank2.life -= 1           
     
-    if tank1.life == 0 or tank2.life == 0:
-        run = False
-    if tank1.life == 0:
-        isGameOver1 = True
-    
-    if tank2.life == 0:
-        isGameOver2 = True
 
-    if not (isGameOver1 and isGameOver2)
-    screen.blit(backgroundImage, (0, 0))
-    tank1.move()
-    tank2.move()
-    tank1.life_draw()
-    tank2.life_draw()
-    for bullet in bullets:
-        bullet.move()
-    pygame.display.flip()
+    if tank1.life == 0 or tank2.life == 0:
+        isGameOver = True
+    
+    if isGameOver == True:
+        pygame.display.update()
+        GameOver(0, 0)
+    
+    if not isGameOver:
+        screen.blit(backgroundImage, (0, 0))
+        tank1.move()
+        tank2.move()
+        tank1.life_draw()
+        tank2.life_draw()
+        for bullet in bullets:
+            bullet.move()
+        pygame.display.flip()
 
 pygame.quit()
