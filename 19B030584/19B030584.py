@@ -1,7 +1,6 @@
 import pygame
 from enum import Enum
 import sys
-# pylint: disable=no-member
 import math
 import pika
 import uuid
