@@ -42,48 +42,49 @@ def background():
         for j in range(0, 600, 100):
             screen.blit(grass, (i, j))
 
-Menu = False
+Menu = True
 Single = False
-Multi = False
+#Multi = False
 AI = False
-# #-------------------------Main Menu----------------------------#
+#-------------------------------------------Main Menu ---------------------------------------------#
+while Menu:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            Menu = False
+            Single = False
 
-# def main_menu():
-#     Menu = True
-#     while Menu:
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 quit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                Menu = False
+                Single = False
 
-#             if event.type == pygame.KEYDOWN:
-#                 if event.key == pygame.K_ESCAPE:
-#                     pygame.quit()
-#                     quit()
-
-#                 elif event.key == pygame.K_s:
-#                     SinglePlayer()
+            elif event.key == pygame.K_s:
+                Single = True
+                Menu = False
                     
-#                 # elif event.key == pygame.K_m:
-#                 #     MultiPlayer()
-#                 #     Menu = False
-#                 # elif event.key == pygame.K_a:
-#                 #     AI = True
-#                 #     Menu = False
+            elif event.key == pygame.K_m:
+                mainloop = True
+                multi()
+                Menu = False
+                Single = False
+                
+            # elif event.key == pygame.K_a:
+            #     AI = True
+                
 
-#         screen.blit(menu_background, (0, 0))
-#         text1 = menu_font1.render('BATTLE CITY', True, (255, 255, 255))
-#         text2 = menu_font2.render('Press S to play SinglePlayer', True, (255, 255, 255))
-#         text3 = menu_font2.render('Press M to play MultiPlayer', True, (255, 255, 255))
-#         text4 = menu_font2.render('Press A to play AI', True, (255, 255, 255))
-#         screen.blit(text1, (450, 50))
-#         screen.blit(text2, (400, 200))
-#         screen.blit(text3, (410, 275))
-#         screen.blit(text4, (430, 350))
+        screen.blit(menu_background, (0, 0))
+        text1 = menu_font1.render('BATTLE CITY', True, (255, 255, 255))
+        text2 = menu_font2.render('Press S to play SinglePlayer', True, (255, 255, 255))
+        text3 = menu_font2.render('Press M to play MultiPlayer', True, (255, 255, 255))
+        text4 = menu_font2.render('Press A to play AI', True, (255, 255, 255))
+        screen.blit(text1, (450, 50))
+        screen.blit(text2, (400, 200))
+        screen.blit(text3, (410, 275))
+        screen.blit(text4, (430, 350))
 
-#         pygame.display.flip()
+        pygame.display.flip()
 
-# main_menu()
+
 #----------------------------Singleplayer-------------------------------#
 class Direction:
     UP = 1
@@ -138,12 +139,12 @@ class Tank:
             self.y += self.speed
 
         if self.y < 0:
-            self.y = 700
-        if self.y > 700:
+            self.y = 600
+        if self.y > 600:
             self.y = 0
         if self.x < 0:
-            self.x = 900
-        if self.x > 900:
+            self.x = 1000
+        if self.x > 1000:
             self.x = 0
         
         self.draw()
@@ -167,8 +168,8 @@ class Bullet:
         pygame.draw.circle(screen, self.colour, (self.x, self.y), self.radius)
     
     def move(self):
-        bul_vel = self.speedx
-        bul_vel = self.speedy
+        # bul_vel = self.speedx
+        # bul_vel = self.speedy
         self.x += self.speedx
         self.y += self.speedy
 
@@ -196,7 +197,7 @@ def draw_wall():
 bul_vel = 15
 
 tank1 = Tank(200, 300, 5, (255, 0, 0), life_img1, (20, 20))
-tank2 = Tank(650, 300, 5, (0, 0, 255), life_img2, (805, 20), pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s)
+tank2 = Tank(650, 300, 5, (0, 0, 255), life_img2, (905, 20), pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s)
 
 bullets = []
 
@@ -211,171 +212,193 @@ sound2 = pygame.mixer.Sound('sound/hit.wav')
  
 isGameOver = False
 
-def SinglePlayer():
-    Single = True
+while Single:
     font = pygame.font.SysFont('Times New Roman', 25)
-    while Single:
-        mill = clock.tick(FPS)
-        pressed = pygame.key.get_pressed()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+    mill = clock.tick(FPS)
+    pressed = pygame.key.get_pressed()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            Single = False
+        if event.type == pygame.USEREVENT:
+            second += 1
+            #print(second)
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
                 Single = False
-            if event.type == pygame.USEREVENT:
-                second += 1
-                #print(second)
-        
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    Single = False
-                if event.key in tank1.KEY.keys():
-                    tank1.change_direction(tank1.KEY[event.key])
-                if event.key in tank2.KEY.keys():
-                    tank2.change_direction(tank2.KEY[event.key])
+            if event.key in tank1.KEY.keys():
+                tank1.change_direction(tank1.KEY[event.key])
+            if event.key in tank2.KEY.keys():
+                tank2.change_direction(tank2.KEY[event.key])
 
-                if event.key == pygame.K_RETURN:
-                    sound1.play()
-                    if tank1.direction == Direction.LEFT:
-                        bullet = Bullet(tank1.x - 25, tank1.y + 25, (255, 0, 0), -1 * bul_vel, 0)
-                    if tank1.direction == Direction.RIGHT:
-                        bullet = Bullet(tank1.x + 60, tank1.y + 25, (255, 0, 0), bul_vel, 0)
-                    if tank1.direction == Direction.UP:
-                        bullet = Bullet(tank1.x + 25, tank1.y - 25, (255, 0, 0), 0, -1 * bul_vel)
-                    if tank1.direction == Direction.DOWN:
-                        bullet = Bullet(tank1.x + 25, tank1.y + 60, (255, 0, 0), 0, bul_vel)
-                    bullets.append(bullet)
+            if event.key == pygame.K_RETURN:
+                sound1.play()
+                if tank1.direction == Direction.LEFT:
+                    bullet = Bullet(tank1.x - 25, tank1.y + 25, (255, 0, 0), -1 * bul_vel, 0)
+                if tank1.direction == Direction.RIGHT:
+                    bullet = Bullet(tank1.x + 60, tank1.y + 25, (255, 0, 0), bul_vel, 0)
+                if tank1.direction == Direction.UP:
+                    bullet = Bullet(tank1.x + 25, tank1.y - 25, (255, 0, 0), 0, -1 * bul_vel)
+                if tank1.direction == Direction.DOWN:
+                    bullet = Bullet(tank1.x + 25, tank1.y + 60, (255, 0, 0), 0, bul_vel)
+                bullets.append(bullet)
 
-                if event.key == pygame.K_SPACE:
-                    sound1.play()
-                    if tank2.direction == Direction.LEFT:
-                        bullet = Bullet(tank2.x - 25, tank2.y + 25, (0, 0, 255), -1*bul_vel, 0)
-                    if tank2.direction == Direction.RIGHT:
-                        bullet = Bullet(tank2.x + 60, tank2.y + 25, (0, 0, 255), bul_vel, 0)
-                    if tank2.direction == Direction.UP:
-                        bullet = Bullet(tank2.x + 25, tank2.y - 25, (0, 0, 255), 0, -1*bul_vel)
-                    if tank2.direction == Direction.DOWN:
-                        bullet = Bullet(tank2.x + 25, tank2.y + 60, (0, 0, 255), 0, bul_vel)
-                    bullets.append(bullet)   
+            if event.key == pygame.K_SPACE:
+                sound1.play()
+                if tank2.direction == Direction.LEFT:
+                    bullet = Bullet(tank2.x - 25, tank2.y + 25, (0, 0, 255), -1*bul_vel, 0)
+                if tank2.direction == Direction.RIGHT:
+                    bullet = Bullet(tank2.x + 60, tank2.y + 25, (0, 0, 255), bul_vel, 0)
+                if tank2.direction == Direction.UP:
+                    bullet = Bullet(tank2.x + 25, tank2.y - 25, (0, 0, 255), 0, -1*bul_vel)
+                if tank2.direction == Direction.DOWN:
+                    bullet = Bullet(tank2.x + 25, tank2.y + 60, (0, 0, 255), 0, bul_vel)
+                bullets.append(bullet)   
     
-        current_time = pygame.time.get_ticks()
-        #print(current_time)
+    current_time = pygame.time.get_ticks()
+    #print(current_time)
     
-        for bull in bullets:
-            if bull.x < 0 or bull.x > 900 or bull.y < 0 or bull.y > 700:
-                bullets.pop(0)
+    for bull in bullets:
+        if bull.x < 0 or bull.x > 1000 or bull.y < 0 or bull.y > 600:
+            bullets.pop(0)
     
-            if bull.x in range(tank2.x, tank2.x + 50) and bull.y in range(tank2.y, tank2.y + 50):
-                sound2.play()
-                bullets.pop(0)
-                tank2.life -= 1
-            if bull.x in range(tank1.x, tank1.x + 50) and bull.y in range(tank1.y, tank1.y + 50):
-                sound2.play()
-                bullets.pop(0)
-                tank1.life -= 1 
-            for i in coord:
-                if bull.x in range(i[0], i[0] + 50) and bull.y in range(i[1], i[1] + 50):
-                    coord.remove(i)
-                    bullets.pop(0)
-    
-
-        if (tank2.x <= tank1.x <= tank2.x + 50 or tank1.x <= tank2.x <= tank1.x + 50) and (tank2.y <= tank1.y <= tank2.y + 50 or tank1.y <= tank2.y <= tank1.y + 50):
-            tank1.life -= 1
-            tank2.life -= 1 
-            tank1.x = 10
-            tank1.y = 640
-            tank2.x = 800
-            tank2.y = 10
-    
+        if bull.x in range(tank2.x, tank2.x + 50) and bull.y in range(tank2.y, tank2.y + 50):
+            sound2.play()
+            bullets.pop(0)
+            tank2.life -= 1
+        if bull.x in range(tank1.x, tank1.x + 50) and bull.y in range(tank1.y, tank1.y + 50):
+            sound2.play()
+            bullets.pop(0)
+            tank1.life -= 1 
         for i in coord:
-            if tank1.x in range(i[0], i[0] + 50) and tank1.y in range(i[1], i[1] + 50):
+            if bull.x in range(i[0], i[0] + 50) and bull.y in range(i[1], i[1] + 50):
                 coord.remove(i)
-                tank1.life -= 1
-            if tank2.x in range(i[0], i[0] + 50) and tank2.y in range(i[1], i[1] + 50):
-                coord.remove(i)
-                tank2.life -= 1
+                bullets.pop(0)
     
-        if bonus.x in range(tank1.x , tank1.x + 50) and bonus.y in range(tank1.y, tank1.y + 50):
-            for bull in bullets:
-                bul_vel = 30
-            tank1.speed =tank1.speed * 2
-            power_time = pygame.time.get_ticks()
-            print(power_time)
-            bonus.x = random.randint(100, 800)
-            bonus.y = random.randint(100, 600)
-            second = 0
-            possiblity = random.randint(0, 15)
-            #print(possiblity)
+
+    if (tank2.x <= tank1.x <= tank2.x + 50 or tank1.x <= tank2.x <= tank1.x + 50) and (tank2.y <= tank1.y <= tank2.y + 50 or tank1.y <= tank2.y <= tank1.y + 50):
+        tank1.life -= 1
+        tank2.life -= 1 
+        tank1.x = 10
+        tank1.y = 640
+        tank2.x = 800
+        tank2.y = 10
     
-        if bonus.x in range(tank2.x , tank2.x + 50) and bonus.y in range(tank2.y, tank2.y + 50):
-            for bull in bullets:
-                bul_vel = 30
-            tank2.speed =tank2.speed * 2
-            power_time = pygame.time.get_ticks()
-            print(power_time)
-            bonus.x =random.randint(100, 800)
-            bonus.y = random.randint(100, 600)
-            second = 0
-            possiblity = random.randint(0, 15)
-            #print(possiblity)
-        
-        if current_time - power_time > 5000:
-            tank1.speed = 5
-            bul_vel = 15
-
-        if current_time - power_time > 5000:
-            tank2.speed = 5
-            bul_vel = 15
-
-        if tank1.life == 0:
-            isGameOver = True
-            screen.blit(end_image, (0, 0))
-            text1 = font.render('Blue tank won!', True, (255, 255, 0))
-            text2 = font.render('Press R to Restart', True, (255, 255, 0))
-            screen.blit(text1, (475, 200))
-            screen.blit(text2, (450, 250))
-            pygame.display.update()
-        
-        if tank2.life == 0:
-            isGameOver = True
-            screen.blit(end_image, (0, 0))
-            text3 = font.render('Red tank won!', True, (255, 255, 0))
-            text4 = font.render('Press R to Restart', True, (255, 255, 0))
-            screen.blit(text3, (475, 200))
-            screen.blit(text4, (450, 250))
-            pygame.display.update()
-        
-        if isGameOver:
-            if pressed[pygame.K_r]:
-                isGameOver = False
-                tank1.life = 3
-                tank2.life = 3
-                tank1.x, tank1.y = 200, 300
-                tank2.x, tank2.y = 650, 300
-                tank1.direction = 0
-                tank2.direction = 0
+    for i in coord:
+        if tank1.x in range(i[0], i[0] + 50) and tank1.y in range(i[1], i[1] + 50):
+            coord.remove(i)
+            tank1.life -= 1
+        if tank2.x in range(i[0], i[0] + 50) and tank2.y in range(i[1], i[1] + 50):
+            coord.remove(i)
+            tank2.life -= 1
     
-        if not isGameOver:
-            #screen.blit(backgroundImage, (0, 0))
-            background()
-            tank1.move()
-            tank2.move()
-            tank1.life_draw()
-            tank2.life_draw()
-            spawn()
-            draw_wall()
-            for bullet in bullets:
-                bullet.move()
-            # tank_wall(tank1)
-            # tank_wall(tank2)
-            pygame.display.flip()
+    if bonus.x in range(tank1.x , tank1.x + 50) and bonus.y in range(tank1.y, tank1.y + 50):
+        for bull in bullets:
+            bul_vel = 30
+        tank1.speed =tank1.speed * 2
+        power_time = pygame.time.get_ticks()
+        print(power_time)
+        bonus.x = random.randint(100, 800)
+        bonus.y = random.randint(100, 600)
+        second = 0
+        possiblity = random.randint(0, 15)
+        #print(possiblity)
+    
+    if bonus.x in range(tank2.x , tank2.x + 50) and bonus.y in range(tank2.y, tank2.y + 50):
+        for bull in bullets:
+            bul_vel = 30
+        tank2.speed =tank2.speed * 2
+        power_time = pygame.time.get_ticks()
+        print(power_time)
+        bonus.x =random.randint(100, 800)
+        bonus.y = random.randint(100, 600)
+        second = 0
+        possiblity = random.randint(0, 15)
+        #print(possiblity)
+        
+    if current_time - power_time > 5000:
+        tank1.speed = 5
+        bul_vel = 15
 
-    pygame.quit()
+    if current_time - power_time > 5000:
+        tank2.speed = 5
+        bul_vel = 15
 
-#-----------------------Multiplayer------------------------#
+    if tank1.life == 0:
+        isGameOver = True
+        screen.blit(end_image, (0, 0))
+        text1 = font.render('Blue tank won!', True, (255, 255, 0))            
+        text2 = font.render('Press R to Restart', True, (255, 255, 0))
+        screen.blit(text1, (475, 200))
+        screen.blit(text2, (450, 250))
+        pygame.display.update()
+        
+    if tank2.life == 0:
+        isGameOver = True
+        screen.blit(end_image, (0, 0))
+        text3 = font.render('Red tank won!', True, (255, 255, 0))
+        text4 = font.render('Press R to Restart', True, (255, 255, 0))
+        screen.blit(text3, (475, 200))
+        screen.blit(text4, (450, 250))
+        pygame.display.update()
+        
+    if isGameOver:
+        if pressed[pygame.K_r]:
+            isGameOver = False
+            tank1.life = 3
+            tank2.life = 3
+            tank1.x, tank1.y = 200, 300
+            tank2.x, tank2.y = 650, 300
+            tank1.direction = 0
+            tank2.direction = 0
+        if pressed[pygame.K_f]:
+            Menu = True
+            Single = False
+
+    
+    if not isGameOver:
+        #screen.blit(backgroundImage, (0, 0))
+        background()
+        tank1.move()
+        tank2.move()
+        tank1.life_draw()
+        tank2.life_draw()
+        spawn()
+        draw_wall()
+        for bullet in bullets:
+            bullet.move()
+        # tank_wall(tank1)
+        # tank_wall(tank2)
+        pygame.display.flip()
+
+pygame.quit()
+#----------------------------Ai-----------------------------#
+
+#--------------------------------Multiplayer-------------------------------------#
+import pygame
+from enum import Enum
+import sys
+import math
+import pika
+import uuid
+import json
+import time
+from threading import Thread
+
 IP = '34.254.177.17'
 PORT = 5672
 VIRTUAL_HOST = 'dar-tanks'
 USERNAME = 'dar-tanks'
 PASSWORD = '5orPLExUYnyVYZg48caMpX'
+
+pygame.init()
+screen = pygame.display.set_mode((1000, 600))
+grass = pygame.transform.scale(pygame.image.load('pic/grass.jpg'), (100, 100))
+end_image = pygame.transform.scale((pygame.image.load('pic/multi_end.jpg')), (1000, 600))
+def multi_background():
+    for i in range(0, 1000, 100):
+        for j in range(0, 600, 100):
+            screen.blit(grass, (i, j))
 
 def multi_end():
     screen.blit(end_image, (0, 0))
@@ -507,7 +530,7 @@ tank_image =  pygame.transform.scale(pygame.image.load('pic/my_tank.png'), (31, 
 enemy_image = pygame.transform.scale(pygame.image.load('pic/enemy_tank.png'), (31, 31))
 
 def draw_tank(id, x, y,  direction):
-    font = pygame.font.SysFont('Times New Roman', 14)
+    font = pygame.font.SysFont('Times New Roman', 16)
     text_id = font.render(id, True, (255, 255, 0))
     screen.blit(text_id,(x-10, y-20))
     if direction == 'UP':
@@ -520,7 +543,7 @@ def draw_tank(id, x, y,  direction):
         screen.blit(pygame.transform.rotate(tank_image, 90), (x, y))
 
 def draw_enemy(id, x, y,  direction):
-    font = pygame.font.SysFont('Times New Roman', 14)
+    font = pygame.font.SysFont('Times New Roman', 16)
     text_id_enemy = font.render(id, True, (255, 255, 0))
     screen.blit(text_id_enemy,(x-10, y-20))
     if direction == 'UP':
@@ -538,10 +561,11 @@ def draw_bullet(colour, x, y, width, height):
 
 def multi():
     mainloop = True
-    font = pygame.font.SysFont('Times New Roman', 12)
+    font = pygame.font.SysFont('Times New Roman', 16)
     while mainloop:
         #multi_background()
         screen.fill((0, 0, 0))
+        pressed = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 mainloop = False
@@ -562,8 +586,8 @@ def multi():
             text_time = font.render("Remaining Time: " + str(remaining_time), True, (220, 20, 60))
             screen.blit(text_time, (840, 10))
             pygame.draw.line(screen, (255,215,0), (825, 0), (825, 600), 3)
-            pygame.draw.rect(screen, (255, 255, 255), (850, 39, 80, 23), 2)
-            pygame.draw.rect(screen, (255, 255, 255), (843, 111, 108, 25), 2)
+            # pygame.draw.rect(screen, (255, 255, 255), (850, 39, 80, 23), 2)
+            # pygame.draw.rect(screen, (255, 255, 255), (843, 111, 108, 25), 2)
             #hits = event_client.response['hits']
             bullets = event_client.response['gameField']['bullets']
             tanks = event_client.response['gameField']['tanks']
@@ -587,7 +611,6 @@ def multi():
                 bullet_height = bullet['height']
                 if bullet['owner'] == client.tank_id:
                     draw_bullet((255, 0, 0), bullet_x, bullet_y, bullet_width, bullet_height)
-                    #pygame.draw.rect(screen, (255, 0, 0), )
                 else:
                     draw_bullet((0, 0, 255), bullet_x, bullet_y, bullet_width, bullet_height)
             
@@ -607,7 +630,7 @@ def multi():
             pass
 
 
-        font2 = pygame.font.SysFont('Times New Roman', 18)
+        font2 = pygame.font.SysFont('Times New Roman', 25)
         for tank in winners:
             if client.tank_id == tank['tankId']:
                 multi_end()
@@ -652,193 +675,4 @@ client.check_server_status()
 client.obtain_token('room-5')
 event_client = TankConsumerClient('room-5')
 event_client.start()
-
-# #---------------------------AI----------------------------------#
-# try:
-#                 remaining_time = event_client.response['remainingTime']
-#                 text_time = font.render("Remaining Time: " + str(remaining_time), True, (220, 20, 60))
-#                 screen.blit(text_time, (840, 10))
-#                 pygame.draw.line(screen, (255,215,0), (825, 0), (825, 600), 3)
-#                 pygame.draw.rect(screen, (255, 255, 255), (850, 39, 80, 23), 2)
-#                 pygame.draw.rect(screen, (255, 255, 255), (843, 111, 108, 25), 2)
-#                 #hits = event_client.response['hits']
-#                 bullets = event_client.response['gameField']['bullets']
-#                 tanks = event_client.response['gameField']['tanks']
-                
-#                 for bullet in bullets:
-#                     bullet_x = bullet['x']
-#                     bullet_y = bullet['y']
-                    
-#                     if bullet['owner'] == client.tank_id:
-#                         pygame.draw.circle(screen, (255 , 255 ,255), (bullet_x, bullet_y), 4)
-#                     else:
-#                         pygame.draw.circle(screen, (0, 128 ,0), (bullet_x, bullet_y), 4)
-
-#                         if bullet_x in range(iamtank_x-31, iamtank_x+31): # Уклонение от пуль
-#                             if iamtank_y < bullet_y:
-#                                 if bullet_y - iamtank_y <= distance:
-#                                     client.turning_tank(client.token, 'RIGHT')
-#                             elif iamtank_y > bullet_y:
-#                                 if iamtank_y - bullet_y <= distance:
-#                                     client.turning_tank(client.token, 'RIGHT')
-#                         if bullet_y in range(iamtank_y-31, iamtank_y+31):
-#                             if iamtank_x < bullet_x:
-#                                 if bullet_x - iamtank_x <= distance:
-#                                     client.turning_tank(client.token, 'DOWN')
-#                             elif iamtank_x > bullet_x:
-#                                 if iamtank_x - bullet_x <= distance:
-#                                     client.turning_tank(client.token, 'DOWN')
-                
-#                 for tank in tanks:
-#                     tank_id = tank['id']
-#                     tank_score = tank['score']
-#                     tank_health = tank['health']
-#                     tank_x = tank['x'] 
-#                     tank_y = tank['y']
-#                     tank_direction = tank['direction']
-
-#                     if tank_id == client.tank_id:           
-#                         iamtank_x = tank_x
-#                         iamtank_y = tank_y
-#                         tank_d = tank_direction
-#                         if tank_d == 'UP':
-#                             client.turning_tank(client.token, random.choice(Direction))
-#                         if remaining_time % 5 == 0:
-#                             client.turning_tank(client.token, random.choice(Direction ))
-#                         draw_tank(tank_x, tank_y, tank_direction, 'Zhaiss')
-
-#                     else:
-# draw_tank2(tank_x, tank_y, tank_direction, tank_id)  # Файринг буллет 
-#                         if iamtank_x in range(tank_x, tank_x + 31) and tank_y > iamtank_y:
-#                             client.turning_tank(client.token, 'DOWN')
-#                             client.firing_bullet(client.token)
-#                             client.turning_tank(client.token, 'RIGHT')
-#                         elif iamtank_x in range(tank_x, tank_x + 31) and tank_y < iamtank_y:
-#                             client.turning_tank(client.token, 'UP')
-#                             client.firing_bullet(client.token)
-#                             client.turning_tank(client.token, 'LEFT')
-#                         elif iamtank_y in range(tank_y, tank_y + 31) and tank_x > iamtank_x:
-#                             client.turning_tank(client.token, 'RIGHT')
-#                             client.firing_bullet(client.token)
-#                             client.turning_tank(client.token, 'DOWN')
-#                         elif iamtank_y in range(tank_y, tank_y + 31) and tank_x < iamtank_x:
-#                             client.turning_tank(client.token, 'LEFT')
-#                             client.firing_bullet(client.token)
-#                             client.turning_tank(client.token, 'UP')
-
-
-#                     info_table(tank_id, tank_health, tank_score)
-#                     info_sort()
-                
-#             except Exception as e:
-#                 # print(str(e))
-#                 pass
-            
-            
-#             for tank in kicked:
-#                 if client.tank_id == tank['tankId']:
-#                     Over()
-#                     text_kick = font3.render("YOU ARE KICKED", True, (255, 255, 255))
-#                     screen.blit(text_kick, (402,200))
-#                     text_kick2 = font3.render("YOUR SCORE IS:" + ' ' +  str(tank['score']),True, (255, 255, 255))
-#                     screen.blit(text_kick2, (400, 220))
-#                     text_replay_lose = font3.render("PRESS 'R' TO REPLAY", True, (255, 215, 0))
-#                     screen.blit(text_replay_lose, (388, 255))
-#                     for event in pygame.event.get():
-#                         if event.type == pygame.KEYDOWN:
-#                             if event.key == pygame.K_r:
-#                                 autoloop = False
-
-#                     pygame.display.flip()
-#                     time.sleep(5)
-#                     Menu()
-
-#             for tank in winners:
-#                 if client.tank_id == tank['tankId']:
-#                     Over()
-#                     text_win = font3.render("YOU ARE WINNER,MAN!", True, (255, 255, 255))
-#                     screen.blit(text_win, (395, 200))
-#                     text_win2 = font3.render("YOUR SCORE IS:" + ' ' +  str(tank['score']),True, (255, 255, 255))
-#                     screen.blit(text_win2, (407, 223))
-#                     text_replay_lose = font3.render("PRESS 'R' TO REPLAY", True, (255, 215, 0))
-#                     screen.blit(text_replay_lose, (388, 255))
-#                     for event in pygame.event.get():
-#                         if event.type == pygame.KEYDOWN:
-#                             if event.key == pygame.K_r:
-#                                 autoloop = False
-
-#                     pygame.display.flip()
-#                     time.sleep(5)
-#                     Menu()
-# for tank in losers:
-#                 if client.tank_id == tank['tankId']:
-#                     Over()
-#                     text_lose = font3.render("YOU ARE LOSER,MAN!", True, (255, 255, 255))
-#                     screen.blit(text_lose, (395, 200))
-#                     text_lose2 = font3.render("YOUR SCORE IS:" + ' ' +  str(tank['score']),True, (255, 255, 255))
-#                     screen.blit(text_lose2, (407, 223))
-#                     text_replay_lose = font3.render("PRESS 'R' TO REPLAY", True, (255, 215, 0))
-#                     screen.blit(text_replay_lose, (388, 255))
-#                     for event in pygame.event.get():
-#                         if event.type == pygame.KEYDOWN:
-#                             if event.key == pygame.K_r:
-#                                 autoloop = False
-
-#                     pygame.display.flip()
-#                     time.sleep(5)
-#                     Menu()
-                
-    
-            
-#             pygame.display.flip() 
-        
-#         client.connection.close()
-#         event_client.channel.stop_consuming()
-#         pygame.quit()
-        
-
-#     client = TankRpcClient()
-#     client.check_server_status()
-#     client.obtain_token('room-17')
-#     event_client = TankConsumerClient('room-17')
-#     event_client.start()
-#     game_start()
-
-
-#-------------------------Main Menu----------------------------#
-
-def main_menu():
-    Menu = True
-    while Menu:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()
-
-                elif event.key == pygame.K_s:
-                    SinglePlayer()
-                    
-                elif event.key == pygame.K_m:
-                    MultiPlayer()
-                # elif event.key == pygame.K_a:
-                #     AI = True
-                
-
-        screen.blit(menu_background, (0, 0))
-        text1 = menu_font1.render('BATTLE CITY', True, (255, 255, 255))
-        text2 = menu_font2.render('Press S to play SinglePlayer', True, (255, 255, 255))
-        text3 = menu_font2.render('Press M to play MultiPlayer', True, (255, 255, 255))
-        text4 = menu_font2.render('Press A to play AI', True, (255, 255, 255))
-        screen.blit(text1, (450, 50))
-        screen.blit(text2, (400, 200))
-        screen.blit(text3, (410, 275))
-        screen.blit(text4, (430, 350))
-
-        pygame.display.flip()
-
-main_menu()
+#multi()
