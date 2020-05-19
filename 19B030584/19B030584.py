@@ -1,6 +1,7 @@
 import pygame
 from enum import Enum
 import sys
+# pylint: disable=no-member
 import math
 import pika
 import uuid
@@ -25,14 +26,14 @@ enemy_image = pygame.transform.scale(pygame.image.load('pic/enemy_tank.png'), (3
 
 menu_font1 =pygame.font.SysFont('Times New Roman', 85)
 menu_font2 =pygame.font.SysFont('Times New Roman', 50)
-###########################SINGLE############################
+#------------------------------------------------------------SP--------------------------------------------------------#
 def sp():
     pygame.init()
 
     screen = pygame.display.set_mode((1000, 600))
     def background():
-        for i in range(0, 900, 100):
-            for j in range(0, 700, 100):
+        for i in range(0, 1000, 100):
+            for j in range(0, 600, 100):
                 screen.blit(grass, (i, j))
 
     
@@ -326,7 +327,7 @@ def sp():
             pygame.display.flip()
 
 
-######################MULTI###################
+#-----------------------------------------MP-------------------------------------------------------#
 IP = '34.254.177.17'
 PORT = 5672
 VIRTUAL_HOST = 'dar-tanks'
@@ -521,8 +522,6 @@ def mp():
                 text_time = font.render("Remaining Time: " + str(remaining_time), True, (220, 20, 60))
                 screen.blit(text_time, (840, 10))
                 pygame.draw.line(screen, (255,215,0), (825, 0), (825, 600), 3)
-                # pygame.draw.rect(screen, (255, 255, 255), (850, 39, 80, 23), 2)
-                # pygame.draw.rect(screen, (255, 255, 255), (843, 111, 108, 25), 2)
                 bullets = event_client.response['gameField']['bullets']
                 tanks = event_client.response['gameField']['tanks']
 
@@ -614,9 +613,204 @@ def mp():
     event_client.start()
     mp_loop()
 
-############################AI#####################
+#-------------------------------------------AI-----------------------------------------------#
+def mp_ai():
+    
+    
+    pygame.init()
 
-########################MAIN MENU#######################
+    screen = pygame.display.set_mode((1000, 600))
+    
+    tank_image =  pygame.transform.scale(pygame.image.load('pic/my_tank.png'), (31, 31))
+    enemy_image = pygame.transform.scale(pygame.image.load('pic/enemy_tank.png'), (31, 31))
+
+    def draw_tank(id, x, y,  direction):
+        font = pygame.font.SysFont('Times New Roman', 16)
+        text_id = font.render(id, True, (255, 255, 0))
+        screen.blit(text_id,(x-10, y-20))
+        if direction == 'UP':
+            screen.blit(tank_image, (x, y))
+        if direction == 'DOWN':
+            screen.blit(pygame.transform.rotate(tank_image, 180), (x, y))
+        if direction == 'RIGHT':
+            screen.blit(pygame.transform.rotate(tank_image, -90), (x, y))
+        if direction == 'LEFT':
+            screen.blit(pygame.transform.rotate(tank_image, 90), (x, y))
+
+    def draw_enemy(id, x, y,  direction):
+        font = pygame.font.SysFont('Times New Roman', 16)
+        text_id_enemy = font.render(id, True, (255, 255, 0))
+        screen.blit(text_id_enemy,(x-10, y-20))
+        if direction == 'UP':
+            screen.blit(enemy_image, (x, y))
+        if direction == 'DOWN':
+            screen.blit(pygame.transform.rotate(enemy_image, 180), (x, y))
+        if direction == 'RIGHT':
+            screen.blit(pygame.transform.rotate(enemy_image, -90), (x, y))
+        if direction == 'LEFT':
+            screen.blit(pygame.transform.rotate(enemy_image, 90), (x, y))
+
+    def draw_bullet(colour, x, y, width, height):
+        pygame.draw.rect(screen, colour, (x, y, width, height))
+
+    
+    def ai_loop():
+        ailoop = True
+        font = pygame.font.SysFont('Times New Roman', 16)
+        mytank_x = None
+        mytank_y = None
+        while ailoop:
+            screen.fill((0, 0, 0))
+            route = ['UP', 'DOWN', 'RIGHT', 'LEFT']
+            #pressed = pygame.key.get_pressed()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    ailoop = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        ailoop = False
+
+
+            kicked = event_client.response['kicked']
+            winners = event_client.response['winners']
+            losers  = event_client.response['losers']
+    
+            try:
+                remaining_time = event_client.response['remainingTime']
+                text_time = font.render("Remaining Time: " + str(remaining_time), True, (220, 20, 60))
+                screen.blit(text_time, (840, 10))
+                pygame.draw.line(screen, (255,215,0), (825, 0), (825, 600), 3)
+                bullets = event_client.response['gameField']['bullets']
+                tanks = event_client.response['gameField']['tanks']
+
+                for tank in tanks:
+                    tank_id = tank['id']
+                    tank_score = tank['score']
+                    tank_health = tank['health']
+                    tank_x = tank['x']
+                    tank_y = tank['y']
+                    tank_direction = tank['direction']
+                    if tank_id == client.tank_id:
+                        mytank_x = tank_x
+                        mytank_y = tank_y
+                        if tank_direction == 'UP':
+                            client.turning_tank(client.token, random.choice(route))
+                        if remaining_time % 5 == 0:
+                            client.turning_tank(client.token, random.choice(route))
+                        draw_tank('You', tank_x, tank_y, tank_direction)
+                    else:
+                        draw_enemy(tank_id, tank_x, tank_y, tank_direction)
+
+                        if tank_x <= mytank_x <= tank_x + 31 and mytank_y > tank_y:
+                            client.turning_tank(client.token, 'UP')
+                            client.firing_bullet(client.token)
+                            client.turning_tank(client.token, 'LEFT')
+                        elif tank_x <= mytank_x <= tank_x + 31 and mytank_y < tank_y:
+                            client.turning_tank(client.token, 'DOWN')
+                            client.firing_bullet(client.token)
+                            client.turning_tank(client.token, 'RIGHT')
+                        elif tank_y <= mytank_y <= tank_y + 31 and mytank_x > tank_x:
+                            client.turning_tank(client.token, 'LEFT')
+                            client.firing_bullet(client.token)
+                            client.turning_tank(client.token, 'UP')
+                        elif tank_y <= mytank_y <= tank_y + 31 and mytank_x < tank_x:
+                            client.turning_tank(client.token, 'RIGHT')
+                            client.firing_bullet(client.token)
+                            client.turning_tank(client.token, 'DOWN')
+
+                for bullet in bullets:
+                    bullet_x = bullet['x']
+                    bullet_y = bullet['y']
+                    bullet_width = bullet['width']
+                    bullet_height = bullet['height']
+                    if bullet['owner'] == client.tank_id:
+                        draw_bullet((255, 0, 0), bullet_x, bullet_y, bullet_width, bullet_height)
+                    else:
+                        draw_bullet((0, 0, 255), bullet_x, bullet_y, bullet_width, bullet_height)
+
+
+                        if mytank_y - 40 <= bullet_y <= mytank_y + 40:
+                            if mytank_x < bullet_x:
+                                if bullet_x - mytank_x <= 90:
+                                    client.turning_tank(client.token, 'DOWN')
+                            if mytank_x > bullet_x:
+                                if mytank_x - bullet_x <= 90:
+                                    client.turning_tank(client.token, 'UP')
+                        if mytank_x - 40 <= bullet_x <= mytank_x + 40:
+                            if mytank_y < bullet_y:
+                                if bullet_y - mytank_y <= 90:
+                                    client.turning_tank(client.token, 'RIGHT')
+                            if mytank_y > bullet_y:
+                                if mytank_y - bullet_y <= 90:
+                                    client.turning_tank(client.token, 'LEFT')
+
+                scores = {tank['id']: [tank['score'], tank['health']] for tank in tanks}
+                sorted_scores = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+                i = 100
+                for score in sorted_scores:
+                    if score[0] == client.tank_id: color = (0, 153, 20)
+                    else: color = (176, 0, 0)
+                    health_score = font.render(score[0] + ':    ' + str(score[1][0]) + '    ' +
+                                                                str(score[1][1]), True, color)
+                    health_scoreRect = health_score.get_rect()
+                    health_scoreRect.center = (920, i)
+                    screen.blit(health_score, health_scoreRect)
+                    i += 30
+            except Exception as e:
+                pass
+
+
+            font2 = pygame.font.SysFont('Times New Roman', 25)
+            for tank in winners:
+                if client.tank_id == tank['tankId']:
+                    screen.blit(end_image, (0, 0))
+                    text1 = font2.render('AI won!', True, (0, 255, 0))
+                    text2 = font2.render('AIs score is:' + ' ' + str(tank['score']), True, (0, 255, 0))
+                    screen.blit(text1, (500, 200))
+                    screen.blit(text2, (490, 230))
+                    pygame.display.flip()
+                    time.sleep(7)
+                    ailoop = False
+                    menu()
+            
+            for tank in kicked:
+                if client.tank_id == tank['tankId']:
+                    screen.blit(end_image, (0, 0))
+                    text1 = font2.render('AI has been kicked for AFK', True, (0, 255, 0))
+                    text2 = font2.render('AIs score is:' + ' ' + str(tank['score']), True, (0, 255, 0))
+                    screen.blit(text1, (500, 200))
+                    screen.blit(text2, (490, 230))
+                    pygame.display.flip()
+                    time.sleep(7)
+                    ailoop = False
+                    menu()
+            
+            for tank in losers:
+                if client.tank_id == tank['tankId']:
+                    screen.blit(end_image, (0, 0))
+                    text1 = font2.render('AI lose (', True, (0, 255, 0))
+                    text2 = font2.render('AIs score is:' + ' ' + str(tank['score']), True, (0, 255, 0))
+                    screen.blit(text1, (500, 200))
+                    screen.blit(text2, (490, 230))
+                    pygame.display.flip()
+                    time.sleep(7)
+                    ailoop = False
+                    menu()
+
+            pygame.display.flip()
+
+        client.connection.close()
+        event_client.channel.stop_consuming()
+        pygame.quit()
+
+    client = TankRpcClient()
+    client.check_server_status()
+    client.obtain_token('room-1')
+    event_client = TankConsumerClient('room-1')
+    event_client.start()
+    ai_loop()
+
+#--------------------------------MAIN MENU--------------------------------------#
 
 def menu():
     screen = pygame.display.set_mode((1000, 600))
@@ -630,6 +824,8 @@ def menu():
                     sp()
                 if event.key == pygame.K_m:
                     mp()
+                if event.key == pygame.K_a:
+                    mp_ai()
         
         screen.blit(menu_background, (0, 0))
         text1 = menu_font1.render('BATTLE CITY', True, (255, 255, 255))
